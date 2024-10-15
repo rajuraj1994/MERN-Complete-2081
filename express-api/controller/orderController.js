@@ -7,7 +7,7 @@ exports.postOrder = async (req, res) => {
     const orderItemIds = Promise.all(req.body.orderItems.map(async orderItem => {
         let newOrderItem = new OrderItem({
             quantity: orderItem.quantity,
-            product: orderItem.product
+            product: orderItem.id
         })
         newOrderItem = await newOrderItem.save()
         return newOrderItem._id
@@ -115,15 +115,12 @@ exports.deleteOrder = (req, res) => {
     })
 }
 
-exports.generateSignature=(req, res) => {
-    const { total_amount, transaction_uuid, product_code } = req.body;
-  
-    // Define the string that will be signed based on eSewa documentation
-    const dataToSign = `total_amount=${total_amount},transaction_uuid=${transaction_uuid},product_code=${product_code}`;
-    
-    // Use your secret key to create the HMAC SHA256 signature
-    const secretKey = process.env.ESEWA_SECRET_KEY;
-    const signature = crypto.createHmac('sha256', secretKey).update(dataToSign).digest('base64');
-  
-    res.json({ signature });
-  }
+// esewa signature generation
+exports.generateSignature=(req,res)=>{
+    const{total_amount,transaction_uuid,product_code}=req.body
+    const dataToSign=`total_amount=${total_amount},transaction_uuid=${transaction_uuid},product_code=${product_code}`
+    // user secret key to create Hmac sha256 signature
+    const secretKey=process.env.ESEWA_SECRET_KEY
+    const signature=crypto.createHmac('sha256',secretKey).update(dataToSign).digest('base64')
+    res.json({signature})
+}
